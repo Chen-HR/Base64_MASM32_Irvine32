@@ -1,0 +1,1282 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    06/24/22 23:19:48
+.\encode.asm						     Page 1 - 1
+
+
+				 ; +----------------------------------------------------------+ 
+				 ; | File author: NUU.U0924028                                | 
+				 ; +----------------------------------------------------------+ 
+				.386
+				.model flat, stdcall
+				.stack 4096 
+				include    Irvine32.inc 
+			      C ; Include file for Irvine32.lib             (Irvine32.inc)
+			      C 
+			      C ;OPTION CASEMAP:NONE		; optional: make identifiers case-sensitive
+			      C 
+			      C INCLUDE SmallWin.inc		; MS-Windows prototypes, structures, and constants
+			      C .NOLIST
+			      C .MODEL flat, stdcall
+C:\Irvine\SmallWin.inc(11) : warning A4011: multiple .MODEL directives found : .MODEL ignored
+			      C .LIST
+			      C 
+			      C INCLUDE VirtualKeys.inc
+			      C ; VirtualKeys.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C 
+			      C .NOLIST
+			      C .LIST
+			      C 
+				includelib kernel32.lib 
+				includelib user32.lib   
+				includelib Irvine32.lib 
+				include    Macros.inc   
+			      C .NOLIST
+			      C .LIST
+			      C 
+				include    ../libary/Irvine32.macro.asm
+			      C  ; +----------------------------------------------------------+ 
+			      C  ; | This MacroLibary dependent on Irvine32.inc, Irvine32.lib | 
+			      C  ; +----------------------------------------------------------+ 
+			      C  ; | File author: NUU.U0924043                                | 
+			      C  ; +----------------------------------------------------------+ 
+			      C 
+			      C getDec macro dest:req ; author: NUU.U0924043
+			      C   push eax
+			      C   call ReadDec
+			      C   mov dest, eax
+			      C   pop eax
+			      C endm
+			      C getInt macro dest:req ; author: NUU.U0924043
+			      C   push eax
+			      C   call ReadInt
+			      C   mov dest, eax
+			      C   pop eax
+			      C endm
+			      C getHex macro dest:req ; author: NUU.U0924043
+			      C   push eax
+			      C   call ReadHex
+			      C   mov dest, eax
+			      C   pop eax
+			      C endm
+			      C getString macro dest:req, size_:req, length_ ; author: NUU.U0924043
+			      C   push edx
+			      C   push ecx
+			      C   push eax
+			      C   mov edx, offset dest
+			      C   mov ecx, size_
+			      C   call ReadString
+			      C   ifnb <length_>
+			      C     mov length_, al
+			      C   endif
+			      C   pop eax
+			      C   pop ecx
+			      C   pop edx
+			      C endm
+			      C getStringLength macro dest:req, surc:req ; author: NUU.U0924043
+			      C   push edx
+			      C   mov edx, offset surc
+			      C   call StrLength
+			      C   mov dest, eax
+			      C   pop edx
+			      C endm
+			      C 
+			      C putBin macro surc:req ; author: NUU.U0924043
+			      C   push eax
+			      C   mov eax, surc
+			      C   call WriteBin
+			      C   pop eax
+			      C endm
+			      C putBinPart macro surc:req, size_:req ; author: NUU.U0924043
+			      C   push eax
+			      C   push ebx
+			      C   mov eax, surc
+			      C   mov ebx, size_
+			      C   call WriteBinB
+			      C   pop ebx
+			      C   pop eax
+			      C endm
+			      C putDec macro surc:req ; author: NUU.U0924043
+			      C   push eax
+			      C   mov eax, surc
+			      C   call WriteDec
+			      C   pop eax
+			      C endm
+			      C putInt macro surc:req ; author: NUU.U0924043
+			      C   push eax
+			      C   mov eax, surc
+			      C   call WriteInt
+			      C   pop eax
+			      C endm
+			      C putHex macro surc:req ; author: NUU.U0924043
+			      C   push eax
+			      C   mov eax, surc
+			      C   call WriteHex
+			      C   pop eax
+			      C endm
+			      C putHexPart macro surc:req, size_:req ; author: NUU.U0924043
+			      C   push eax
+			      C   push ebx
+			      C   mov eax, surc
+			      C   mov ebx, size_
+			      C   call WriteHexB
+			      C   pop ebx
+			      C   pop eax
+			      C endm
+			      C putConstChar macro surc:req ; author: NUU.U0924043
+			      C   push eax
+			      C   mov eax, surc
+			      C   call WriteChar
+			      C   pop eax
+			      C endm
+			      C putChar macro surc:req ; author: NUU.U0924043
+			      C   push eax
+			      C   movzx eax, surc
+			      C   call WriteChar
+			      C   pop eax
+			      C endm
+			      C putConstString macro String0:req, String1, String2, String3 ; author: NUU.U0924043
+			      C   local string_
+			      C   .data
+			      C     string_ byte String0,0
+			      C   .code
+			      C     push edx
+			      C     mov edx, offset string_
+			      C     call WriteString
+			      C     ifnb <String1>
+			      C       putConstString String1
+			      C     endif
+			      C     ifnb <String2>
+			      C       putConstString String2
+			      C     endif
+			      C     ifnb <String3>
+			      C       putConstString String3
+			      C     endif
+			      C     pop edx
+			      C endm
+			      C putString macro String0:req, String1, String2, String3 ; author: NUU.U0924043
+			      C   .code
+			      C     push edx
+			      C     mov edx, offset String0
+			      C     call WriteString
+			      C     ifnb <String1>
+			      C       putConstString String1
+			      C     endif
+			      C     ifnb <String2>
+			      C       putConstString String2
+			      C     endif
+			      C     ifnb <String3>
+			      C       putConstString String3
+			      C     endif
+			      C     pop edx
+			      C endm
+			      C putStringDetail macro String:req ; author: NUU.U0924043
+			      C   local putCode_, putChar_
+			      C   push eax
+			      C   push edx
+			      C   push ecx
+			      C     mov eax, offset String
+			      C     putHex eax
+			      C     putConstString ", "
+			      C     getStringLength ecx, String
+			      C     putDec ecx
+			      C     putConstString ":"
+			      C     push ecx
+			      C       mov edx, 0
+			      C       putCode_:
+			      C         movzx eax, String[edx]
+			      C         putConstString " "
+			      C         putHexPart eax, type String
+			      C         dec ecx
+			      C         inc edx
+			      C         cmp ecx, 0
+			      C       jnz putCode_
+			      C     pop ecx
+			      C     putConstString ": "
+			      C     push ecx
+			      C       mov edx, 0
+			      C       putChar_:
+			      C         putChar String[edx]
+			      C         dec ecx
+			      C         inc edx
+			      C         cmp ecx, 0
+			      C       jnz putChar_
+			      C     pop ecx
+			      C     call Crlf
+			      C   pop ecx
+			      C   pop edx
+			      C   pop eax
+			      C endm
+			      C 
+				include    ../libary/base64.macro.asm
+			      C  ; +----------------------------------------------------------+ 
+			      C  ; | This MacroLibary dependent on Irvine32.inc, Irvine32.lib | 
+			      C  ; +----------------------------------------------------------+ 
+			      C  ; | File author: NUU.U0924043, NUU.U0924051                  | 
+			      C  ; +----------------------------------------------------------+ 
+			      C 
+			      C  ;   | 0 1 2 3 4 5 6 7 8 9 A B C D E F 
+			      C  ;---+---------------------------------
+			      C  ; 0 | A B C D E F G H I J K L M N O P 
+			      C  ; 1 | Q R S T U V W X Y Z a b c d e f 
+			      C  ; 2 | g h i j k l m n o p q r s t u v 
+			      C  ; 3 | w x y z 0 1 2 3 4 5 6 7 8 9 + / 
+			      C 
+			      C StringDetail_3 macro String:req ; author: NUU.U0924043
+			      C   push eax
+			      C   push ecx
+			      C     mov eax, offset String
+			      C     putHex eax
+			      C     putConstString ", "
+			      C     getStringLength ecx, String
+			      C     putDec ecx
+			      C     putConstString ": "
+			      C     ; putString String
+			      C     ; putConstString ": "
+			      C     movzx eax, String[0]
+			      C     putHexPart eax, type String
+			      C     putConstString " "
+			      C     movzx eax, String[1]
+			      C     putHexPart eax, type String
+			      C     putConstString " "
+			      C     movzx eax, String[2]
+			      C     putHexPart eax, type String
+			      C     putConstString ": "
+			      C     putChar String[0]
+			      C     putChar String[1]
+			      C     putChar String[2]
+			      C     call Crlf
+			      C   pop ecx
+			      C   pop eax
+			      C endm
+			      C StringDetail_4_putBase64Char macro String:req ; author: NUU.U0924043
+			      C   push eax
+			      C   push ecx
+			      C     mov eax, offset String
+			      C     putHex eax
+			      C     putConstString ", "
+			      C     getStringLength ecx, String
+			      C     putDec ecx
+			      C     putConstString ": "
+			      C     ; putString String
+			      C     ; putConstString ": "
+			      C     movzx eax, String[0]
+			      C     putHexPart eax, type String
+			      C     putConstString " "
+			      C     movzx eax, String[1]
+			      C     putHexPart eax, type String
+			      C     putConstString " "
+			      C     movzx eax, String[2]
+			      C     putHexPart eax, type String
+			      C     putConstString " "
+			      C     movzx eax, String[3]
+			      C     putHexPart eax, type String
+			      C     putConstString ": "
+			      C     putChar String[0]
+			      C     putChar String[1]
+			      C     putChar String[2]
+			      C     putChar String[3]
+			      C     putConstString ": "
+			      C     putBase64Char base64Dict, String[0]
+			      C     putBase64Char base64Dict, String[1]
+			      C     putBase64Char base64Dict, String[2]
+			      C     putBase64Char base64Dict, String[3]
+			      C     call Crlf
+			      C   pop ecx
+			      C   pop eax
+			      C endm
+			      C putBase64Char macro dest:req, surc:req ; author: NUU.U0924051
+			      C   push eax
+			      C   push ebx
+			      C     movzx eax, surc
+			      C     ; putHexPart ebx, type surc
+			      C     ; putConstString " "
+			      C     movzx ebx, dest[eax]
+			      C     ; putHexPart eax, type dest
+			      C     ; putConstString ": "
+			      C     putChar bl
+			      C     ; call Crlf
+			      C   pop ebx
+			      C   pop eax
+			      C endm
+			      C putBase64Char_4bit macro dest:req, surc:req ; author: NUU.U0924051
+			      C     putBase64Char dest, surc[0]
+			      C     putBase64Char dest, surc[1]
+			      C     putBase64Char dest, surc[2]
+			      C     putBase64Char dest, surc[3]
+			      C endm
+			      C putBase64Char_3bit macro dest:req, surc:req ; author: NUU.U0924051
+			      C     putBase64Char dest, surc[0]
+			      C     putBase64Char dest, surc[1]
+			      C     putBase64Char dest, surc[2]
+			      C endm
+			      C putBase64Char_2bit macro dest:req, surc:req ; author: NUU.U0924051
+			      C     putBase64Char dest, surc[0]
+			      C     putBase64Char dest, surc[1]
+			      C endm
+			      C parseBase64Code_3bit macro dest:req, surc:req, index:req ; author: NUU.U0924043
+			      C   push eax
+			      C     mov al, surc[index+0]
+			      C     and al, 11111100b
+			      C     shr al, 2
+			      C     mov dest[0], al
+			      C     mov al, surc[index+0]
+			      C     and al, 00000011b
+			      C     shl al, 4
+			      C     mov dest[1], al
+			      C     mov al, surc[index+1]
+			      C     and al, 11110000b
+			      C     shr al, 4
+			      C     or  dest[1], al
+			      C     mov al, surc[index+1]
+			      C     and al, 00001111b
+			      C     shl al, 2
+			      C     mov dest[2], al
+			      C     mov al, surc[index+2]
+			      C     and al, 11000000b
+			      C     shr al, 6
+			      C     or  dest[2], al
+			      C     mov al, surc[index+2]
+			      C     and al, 00111111b
+			      C     mov dest[3], al
+			      C   pop eax
+			      C endm
+			      C 
+			      C 
+			      C ParsePutBase64 macro dict:req, surc:req, groupNumber:req, stringLength:req ; author: NUU.U0924043
+			      C   local toBase64_Loop, base64Char_2bit, base64Char_3bit, base64Char_4bit, dest
+			      C   .data
+			      C     dest byte 4 dup(0)
+			      C   .code
+			      C     push esi    ; record stringOffset
+			      C     push ecx    ; record groupNumber
+			      C     mov esi, 0  ; 
+			      C     mov ecx, 0  ; 
+			      C     toBase64_Loop: 
+			      C       ;parseBase64----------------------------;
+			      C       parseBase64Code_3bit dest, surc, esi    ;
+			      C       ;putBase64------------------------------;
+			      C       push edx                                ;
+			      C         mov edx, esi                          ;
+			      C         add edx, 3                            ;
+			      C         mov dh, stringLength                  ;
+			      C         base64Char_4bit:                      ;
+			      C           cmp dh, dl                          ;
+			      C           js base64Char_3bit                  ;
+			      C           putBase64Char_4bit base64Dict, dest ;
+			      C           jmp base64Char_                     ;
+			      C         base64Char_3bit:                      ;
+			      C           dec edx                             ;
+			      C           cmp dh, dl                          ;
+			      C           js base64Char_2bit                  ;
+			      C           putBase64Char_3bit base64Dict, dest ;
+			      C           putConstString "="                  ;
+			      C           jmp base64Char_                     ;
+			      C         base64Char_2bit:                      ;
+			      C           dec edx                             ;
+			      C           cmp dh, dl                          ;
+			      C           js base64Char_                      ;
+			      C           putBase64Char_2bit base64Dict, dest ;
+			      C           putConstString "=="                 ;
+			      C           jmp base64Char_                     ;
+			      C         base64Char_:                          ;
+			      C       pop edx                                 ;
+			      C       ;gotoNextGroup--------------------------;
+			      C       add esi, 3                              ;
+			      C       add ecx, 1                              ;
+			      C       cmp cl, groupNumber                     ;
+			      C       js toBase64_Loop                        ;
+			      C       ;---------------------------------------;
+			      C       ; call Crlf
+			      C     pop ecx
+			      C     pop esi
+			      C endm
+			      C 
+			      C Base64CharToBase64Code macro dest:req, Dict:req ; author: NUU.U0924051
+			      C   local dictRead, dictFound, dictOut, dictErr, macroEnd
+			      C   push eax
+			      C   push ecx
+			      C     movzx eax, dest
+			      C     mov ecx, 0
+			      C     dictRead:
+			      C       cmp al, Dict[ecx]
+			      C       jz dictFound
+			      C       inc ecx
+			      C       cmp ecx, lengthof Dict
+			      C       js dictRead
+			      C       jmp dictOut
+			      C     dictFound: 
+			      C       mov eax, ecx
+			      C       mov dest, al
+			      C       jmp macroEnd
+			      C     dictOut:
+			      C       cmp al, '='
+			      C       js dictErr
+			      C       mov dest, 0
+			      C       jmp macroEnd
+			      C     dictErr:
+			      C       putConstString 10, 13, "Error: '"
+			      C       putChar dest
+			      C       putConstString "' can't to Base64Code .", 10, 13
+			      C     macroEnd:
+			      C   pop ecx
+			      C   pop eax
+			      C endm
+			      C Base64CharToBase64Code_4bit macro Dict:req, dest:req, index:req ; author: NUU.U0924051
+			      C   push eax
+			      C     Base64CharToBase64Code dest[index+0], base64Dict
+			      C     Base64CharToBase64Code dest[index+1], base64Dict
+			      C     Base64CharToBase64Code dest[index+2], base64Dict
+			      C     Base64CharToBase64Code dest[index+3], base64Dict
+			      C   pop eax
+			      C endm
+			      C parseASCIICode_4bit macro dest:req, surc:req, index:req ; author: NUU.U0924043
+			      C   push eax
+			      C     mov al, surc[index+0]
+			      C     and al, 00111111b
+			      C     shl al, 2
+			      C     mov ah, al
+			      C     mov al, surc[index+1]
+			      C     and al, 00110000b
+			      C     shr al, 4
+			      C     or  al, ah
+			      C     mov dest+0, al
+			      C     mov al, surc[index+1]
+			      C     and al, 00001111b
+			      C     shl al, 4
+			      C     mov ah, al
+			      C     mov al, surc[index+2]
+			      C     and al, 00111100b
+			      C     shr al, 2
+			      C     or  al, ah
+			      C     mov dest+1, al
+			      C     mov al, surc[index+2]
+			      C     and al, 00000011b
+			      C     shl al, 6
+			      C     mov ah, al
+			      C     mov al, surc[index+3]
+			      C     and al, 00111111b
+			      C     or  al, ah
+			      C     mov dest+2, al
+			      C   pop eax
+			      C endm
+			      C ParsePutASCII macro dict:req, surc:req, groupNumber:req, stringLength:req ; author: NUU.U0924043
+			      C   local toASCII_Loop, base64Char_2bit, base64Char_3bit, base64Char_4bit, dest
+			      C   .data
+			      C     dest byte 4 dup(0)
+			      C   .code
+			      C     push esi    ; record stringOffset
+			      C     push ecx    ; record groupNumber
+			      C     mov esi, 0  ; 
+			      C     mov ecx, 0  ; 
+			      C     toASCII_Loop: 
+			      C       ;parseASCII---------------------------------------;
+			      C       mov dest+0, 0                                     ;
+			      C       mov dest+1, 0                                     ;
+			      C       mov dest+2, 0                                     ;
+			      C       mov dest+3, 0                                     ;
+			      C       Base64CharToBase64Code_4bit base64Dict, surc, esi ;
+			      C       parseASCIICode_4bit dest, surc, esi               ;
+			      C       ;putASCII-----------------------------------------;
+			      C       putString dest                                    ;
+			      C       ;gotoNextGroup------------------------------------;
+			      C       add esi, 4                                        ;
+			      C       add ecx, 1                                        ;
+			      C       cmp cl, groupNumber                               ;
+			      C       js toASCII_Loop                                   ;
+			      C       ;-------------------------------------------------;
+			      C       ; call Crlf
+			      C     pop ecx
+			      C     pop esi
+			      C endm
+			      C 
+ 00000000			.data
+ 00000000 41 42 43 44 45	  base64Dict byte "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+	   46 47 48 49 4A
+	   4B 4C 4D 4E 4F
+	   50 51 52 53 54
+	   55 56 57 58 59
+	   5A 61 62 63 64
+	   65 66 67 68 69
+	   6A 6B 6C 6D 6E
+	   6F 70 71 72 73
+	   74 75 76 77 78
+	   79 7A 30 31 32
+	   33 34 35 36 37
+	   38 39 2B 2F 00
+				                  "abcdefghijklmnopqrstuvwxyz",
+				                  "0123456789",'+','/',0
+ 00000041  00000050 [		  buffer byte 80 dup(0)
+	    00
+	   ]
+ 00000091 00			  byteCount byte ?
+ 00000092 00			  count byte ?
+ 00000093 0003			  groupSize word 3
+ 00000095 0000			  groupNumber word ?
+ 00000097 0000			  stringLength word ?
+ 00000099 0064			  precision word 100
+ 00000000			.code
+ 00000000			  encode proc ; author: NUU.U0924028
+				    putConstString "< "
+ 0000009B		     1	  .data
+ 0000009B 3C 20 00	     1	    ??0000 byte "< ",0
+ 00000000		     1	  .code
+ 00000000  52		     1	    push edx
+ 00000001  BA 0000009B R     1	    mov edx, offset ??0000
+ 00000006  E8 00000000 E     1	    call WriteString
+ 0000000B  5A		     1	    pop edx
+				      getString buffer,SIZEOF buffer,byteCount
+ 0000000C  52		     1	  push edx
+ 0000000D  51		     1	  push ecx
+ 0000000E  50		     1	  push eax
+ 0000000F  BA 00000041 R     1	  mov edx, offset buffer
+ 00000014  B9 00000050	     1	  mov ecx, SIZEOF buffer
+ 00000019  E8 00000000 E     1	  call ReadString
+ 0000001E  A2 00000091 R     1	    mov byteCount, al
+ 00000023  58		     1	  pop eax
+ 00000024  59		     1	  pop ecx
+ 00000025  5A		     1	  pop edx
+ 00000026  9B DB E3		      finit
+ 00000029  DF 05 00000093 R	      fild groupSize
+ 0000002F  66| 0F B6 05		      movzx ax,byteCount
+	   00000091 R
+ 00000037  66| A3		      mov stringLength, ax
+	   00000097 R
+ 0000003D  DF 05 00000097 R	      fild stringLength
+ 00000043  D8 F1		      fdiv st(0), st(1)
+ 00000045  DD C1		      ffree st(1)
+ 00000047  DF 05 00000099 R	      fild precision
+ 0000004D  D8 C9		      fmul st(0), st(1)
+ 0000004F  DD C1		      ffree st(1)
+ 00000051  DF 15 00000095 R	      fist groupNumber
+ 00000057  DD C0		      ffree st(0)
+ 00000059  66| A1		      mov ax, groupNumber
+	   00000095 R
+ 0000005F  66| 8B 1D		      mov bx, precision
+	   00000099 R
+ 00000066  F6 F3		      div bl
+ 00000068  80 FC 00		      cmp ah,0
+ 0000006B  74 02		      jz L1
+ 0000006D  FE C0		      inc al
+ 0000006F			    L1: 
+ 0000006F  A2 00000092 R	      mov count,al
+				      putConstString "> "
+ 0000009E		     1	  .data
+ 0000009E 3E 20 00	     1	    ??0001 byte "> ",0
+ 00000074		     1	  .code
+ 00000074  52		     1	    push edx
+ 00000075  BA 0000009E R     1	    mov edx, offset ??0001
+ 0000007A  E8 00000000 E     1	    call WriteString
+ 0000007F  5A		     1	    pop edx
+				      ParsePutBase64 base64Dict, buffer, count, byteCount
+ 000000A1		     1	  .data
+ 000000A1  00000004 [	     1	    ??0006 byte 4 dup(0)
+	    00
+	   ]
+ 00000080		     1	  .code
+ 00000080  56		     1	    push esi    ; record stringOffset
+ 00000081  51		     1	    push ecx    ; record groupNumber
+ 00000082  BE 00000000	     1	    mov esi, 0  ; 
+ 00000087  B9 00000000	     1	    mov ecx, 0  ; 
+ 0000008C		     1	    ??0002: 
+ 0000008C  50		     2	  push eax
+ 0000008D  8A 86 00000041 R  2	    mov al, buffer[esi+0]
+ 00000093  24 FC	     2	    and al, 11111100b
+ 00000095  C0 E8 02	     2	    shr al, 2
+ 00000098  A2 000000A1 R     2	    mov ??0006[0], al
+ 0000009D  8A 86 00000041 R  2	    mov al, buffer[esi+0]
+ 000000A3  24 03	     2	    and al, 00000011b
+ 000000A5  C0 E0 04	     2	    shl al, 4
+ 000000A8  A2 000000A2 R     2	    mov ??0006[1], al
+ 000000AD  8A 86 00000042 R  2	    mov al, buffer[esi+1]
+ 000000B3  24 F0	     2	    and al, 11110000b
+ 000000B5  C0 E8 04	     2	    shr al, 4
+ 000000B8  08 05 000000A2 R  2	    or  ??0006[1], al
+ 000000BE  8A 86 00000042 R  2	    mov al, buffer[esi+1]
+ 000000C4  24 0F	     2	    and al, 00001111b
+ 000000C6  C0 E0 02	     2	    shl al, 2
+ 000000C9  A2 000000A3 R     2	    mov ??0006[2], al
+ 000000CE  8A 86 00000043 R  2	    mov al, buffer[esi+2]
+ 000000D4  24 C0	     2	    and al, 11000000b
+ 000000D6  C0 E8 06	     2	    shr al, 6
+ 000000D9  08 05 000000A3 R  2	    or  ??0006[2], al
+ 000000DF  8A 86 00000043 R  2	    mov al, buffer[esi+2]
+ 000000E5  24 3F	     2	    and al, 00111111b
+ 000000E7  A2 000000A4 R     2	    mov ??0006[3], al
+ 000000EC  58		     2	  pop eax
+ 000000ED  52		     1	      push edx                                ;
+ 000000EE  8B D6	     1	        mov edx, esi                          ;
+ 000000F0  83 C2 03	     1	        add edx, 3                            ;
+ 000000F3  8A 35 00000091 R  1	        mov dh, byteCount                  ;
+ 000000F9		     1	        ??0005:                      ;
+ 000000F9  38 D6	     1	          cmp dh, dl                          ;
+ 000000FB  78 75	     1	          js ??0004                  ;
+ 000000FD  50		     3	  push eax
+ 000000FE  53		     3	  push ebx
+ 000000FF  0F B6 05	     3	    movzx eax, ??0006[0]
+	   000000A1 R
+ 00000106  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 0000010D  50		     4	  push eax
+ 0000010E  0F B6 C3	     4	  movzx eax, bl
+ 00000111  E8 00000000 E     4	  call WriteChar
+ 00000116  58		     4	  pop eax
+ 00000117  5B		     3	  pop ebx
+ 00000118  58		     3	  pop eax
+ 00000119  50		     3	  push eax
+ 0000011A  53		     3	  push ebx
+ 0000011B  0F B6 05	     3	    movzx eax, ??0006[1]
+	   000000A2 R
+ 00000122  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 00000129  50		     4	  push eax
+ 0000012A  0F B6 C3	     4	  movzx eax, bl
+ 0000012D  E8 00000000 E     4	  call WriteChar
+ 00000132  58		     4	  pop eax
+ 00000133  5B		     3	  pop ebx
+ 00000134  58		     3	  pop eax
+ 00000135  50		     3	  push eax
+ 00000136  53		     3	  push ebx
+ 00000137  0F B6 05	     3	    movzx eax, ??0006[2]
+	   000000A3 R
+ 0000013E  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 00000145  50		     4	  push eax
+ 00000146  0F B6 C3	     4	  movzx eax, bl
+ 00000149  E8 00000000 E     4	  call WriteChar
+ 0000014E  58		     4	  pop eax
+ 0000014F  5B		     3	  pop ebx
+ 00000150  58		     3	  pop eax
+ 00000151  50		     3	  push eax
+ 00000152  53		     3	  push ebx
+ 00000153  0F B6 05	     3	    movzx eax, ??0006[3]
+	   000000A4 R
+ 0000015A  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 00000161  50		     4	  push eax
+ 00000162  0F B6 C3	     4	  movzx eax, bl
+ 00000165  E8 00000000 E     4	  call WriteChar
+ 0000016A  58		     4	  pop eax
+ 0000016B  5B		     3	  pop ebx
+ 0000016C  58		     3	  pop eax
+ 0000016D  E9 000000B2	     1	          jmp base64Char_                     ;
+ 00000172		     1	        ??0004:                      ;
+ 00000172  4A		     1	          dec edx                             ;
+ 00000173  38 D6	     1	          cmp dh, dl                          ;
+ 00000175  78 62	     1	          js ??0003                  ;
+ 00000177  50		     3	  push eax
+ 00000178  53		     3	  push ebx
+ 00000179  0F B6 05	     3	    movzx eax, ??0006[0]
+	   000000A1 R
+ 00000180  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 00000187  50		     4	  push eax
+ 00000188  0F B6 C3	     4	  movzx eax, bl
+ 0000018B  E8 00000000 E     4	  call WriteChar
+ 00000190  58		     4	  pop eax
+ 00000191  5B		     3	  pop ebx
+ 00000192  58		     3	  pop eax
+ 00000193  50		     3	  push eax
+ 00000194  53		     3	  push ebx
+ 00000195  0F B6 05	     3	    movzx eax, ??0006[1]
+	   000000A2 R
+ 0000019C  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 000001A3  50		     4	  push eax
+ 000001A4  0F B6 C3	     4	  movzx eax, bl
+ 000001A7  E8 00000000 E     4	  call WriteChar
+ 000001AC  58		     4	  pop eax
+ 000001AD  5B		     3	  pop ebx
+ 000001AE  58		     3	  pop eax
+ 000001AF  50		     3	  push eax
+ 000001B0  53		     3	  push ebx
+ 000001B1  0F B6 05	     3	    movzx eax, ??0006[2]
+	   000000A3 R
+ 000001B8  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 000001BF  50		     4	  push eax
+ 000001C0  0F B6 C3	     4	  movzx eax, bl
+ 000001C3  E8 00000000 E     4	  call WriteChar
+ 000001C8  58		     4	  pop eax
+ 000001C9  5B		     3	  pop ebx
+ 000001CA  58		     3	  pop eax
+ 000000A5		     2	  .data
+ 000000A5 3D 00		     2	    ??0007 byte "=",0
+ 000001CB		     2	  .code
+ 000001CB  52		     2	    push edx
+ 000001CC  BA 000000A5 R     2	    mov edx, offset ??0007
+ 000001D1  E8 00000000 E     2	    call WriteString
+ 000001D6  5A		     2	    pop edx
+ 000001D7  EB 4B	     1	          jmp base64Char_                     ;
+ 000001D9		     1	        ??0003:                      ;
+ 000001D9  4A		     1	          dec edx                             ;
+ 000001DA  38 D6	     1	          cmp dh, dl                          ;
+ 000001DC  78 46	     1	          js base64Char_                      ;
+ 000001DE  50		     3	  push eax
+ 000001DF  53		     3	  push ebx
+ 000001E0  0F B6 05	     3	    movzx eax, ??0006[0]
+	   000000A1 R
+ 000001E7  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 000001EE  50		     4	  push eax
+ 000001EF  0F B6 C3	     4	  movzx eax, bl
+ 000001F2  E8 00000000 E     4	  call WriteChar
+ 000001F7  58		     4	  pop eax
+ 000001F8  5B		     3	  pop ebx
+ 000001F9  58		     3	  pop eax
+ 000001FA  50		     3	  push eax
+ 000001FB  53		     3	  push ebx
+ 000001FC  0F B6 05	     3	    movzx eax, ??0006[1]
+	   000000A2 R
+ 00000203  0F B6 98	     3	    movzx ebx, base64Dict[eax]
+	   00000000 R
+ 0000020A  50		     4	  push eax
+ 0000020B  0F B6 C3	     4	  movzx eax, bl
+ 0000020E  E8 00000000 E     4	  call WriteChar
+ 00000213  58		     4	  pop eax
+ 00000214  5B		     3	  pop ebx
+ 00000215  58		     3	  pop eax
+ 000000A7		     2	  .data
+ 000000A7 3D 3D 00	     2	    ??0008 byte "==",0
+ 00000216		     2	  .code
+ 00000216  52		     2	    push edx
+ 00000217  BA 000000A7 R     2	    mov edx, offset ??0008
+ 0000021C  E8 00000000 E     2	    call WriteString
+ 00000221  5A		     2	    pop edx
+ 00000222  EB 00	     1	          jmp base64Char_                     ;
+ 00000224		     1	        base64Char_:                          ;
+ 00000224  5A		     1	      pop edx                                 ;
+ 00000225  83 C6 03	     1	      add esi, 3                              ;
+ 00000228  83 C1 01	     1	      add ecx, 1                              ;
+ 0000022B  3A 0D 00000092 R  1	      cmp cl, count                     ;
+ 00000231  0F 88 FFFFFE55    1	      js ??0002                        ;
+ 00000237  59		     1	    pop ecx
+ 00000238  5E		     1	    pop esi
+				      putConstString 10,13
+ 000000AA		     1	  .data
+ 000000AA 0A 00		     1	    ??0009 byte 10,0
+ 00000239		     1	  .code
+ 00000239  52		     1	    push edx
+ 0000023A  BA 000000AA R     1	    mov edx, offset ??0009
+ 0000023F  E8 00000000 E     1	    call WriteString
+ 000000AC		     2	  .data
+ 000000AC 0D 00		     2	    ??000A byte 13,0
+ 00000244		     2	  .code
+ 00000244  52		     2	    push edx
+ 00000245  BA 000000AC R     2	    mov edx, offset ??000A
+ 0000024A  E8 00000000 E     2	    call WriteString
+ 0000024F  5A		     2	    pop edx
+ 00000250  5A		     1	    pop edx
+ 00000251  C3			    ret
+ 00000252			  encode endp
+				end encode
+Microsoft (R) Macro Assembler Version 6.14.8444		    06/24/22 23:19:48
+.\encode.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+Base64CharToBase64Code_4bit  . .	Proc
+Base64CharToBase64Code . . . . .	Proc
+IsDefined  . . . . . . . . . . .	Func
+ParsePutASCII  . . . . . . . . .	Proc
+ParsePutBase64 . . . . . . . . .	Proc
+Startup  . . . . . . . . . . . .	Proc
+StringDetail_3 . . . . . . . . .	Proc
+StringDetail_4_putBase64Char . .	Proc
+getDec . . . . . . . . . . . . .	Proc
+getHex . . . . . . . . . . . . .	Proc
+getInt . . . . . . . . . . . . .	Proc
+getStringLength  . . . . . . . .	Proc
+getString  . . . . . . . . . . .	Proc
+mDumpMem . . . . . . . . . . . .	Proc
+mDump  . . . . . . . . . . . . .	Proc
+mGotoxy  . . . . . . . . . . . .	Proc
+mReadString  . . . . . . . . . .	Proc
+mShowRegister  . . . . . . . . .	Proc
+mShow  . . . . . . . . . . . . .	Proc
+mWriteLn . . . . . . . . . . . .	Proc
+mWriteSpace  . . . . . . . . . .	Proc
+mWriteString . . . . . . . . . .	Proc
+mWrite . . . . . . . . . . . . .	Proc
+parseASCIICode_4bit  . . . . . .	Proc
+parseBase64Code_3bit . . . . . .	Proc
+putBase64Char_2bit . . . . . . .	Proc
+putBase64Char_3bit . . . . . . .	Proc
+putBase64Char_4bit . . . . . . .	Proc
+putBase64Char  . . . . . . . . .	Proc
+putBinPart . . . . . . . . . . .	Proc
+putBin . . . . . . . . . . . . .	Proc
+putChar  . . . . . . . . . . . .	Proc
+putConstChar . . . . . . . . . .	Proc
+putConstString . . . . . . . . .	Proc
+putDec . . . . . . . . . . . . .	Proc
+putHexPart . . . . . . . . . . .	Proc
+putHex . . . . . . . . . . . . .	Proc
+putInt . . . . . . . . . . . . .	Proc
+putStringDetail  . . . . . . . .	Proc
+putString  . . . . . . . . . . .	Proc
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_CURSOR_INFO  . . . . . .	 00000008
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  bVisible . . . . . . . . . . .	 00000004	 DWord
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPosition . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  dwMaximumWindowSize  . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  X  . . . . . . . . . . . . . .	 00000000	 Word
+  Y  . . . . . . . . . . . . . .	 00000002	 Word
+FILETIME . . . . . . . . . . . .	 00000008
+  loDateTime . . . . . . . . . .	 00000000	 DWord
+  hiDateTime . . . . . . . . . .	 00000004	 DWord
+FOCUS_EVENT_RECORD . . . . . . .	 00000004
+  bSetFocus  . . . . . . . . . .	 00000000	 DWord
+FPU_ENVIRON  . . . . . . . . . .	 0000001C
+  controlWord  . . . . . . . . .	 00000000	 Word
+  statusWord . . . . . . . . . .	 00000004	 Word
+  tagWord  . . . . . . . . . . .	 00000008	 Word
+  instrPointerOffset . . . . . .	 0000000C	 DWord
+  instrPointerSelector . . . . .	 00000010	 DWord
+  operandPointerOffset . . . . .	 00000014	 DWord
+  operandPointerSelector . . . .	 00000018	 Word
+INPUT_RECORD . . . . . . . . . .	 00000014
+  EventType  . . . . . . . . . .	 00000000	 Word
+  Event  . . . . . . . . . . . .	 00000004	  00000010
+  bKeyDown . . . . . . . . . . .	 00000000	 DWord
+  wRepeatCount . . . . . . . . .	 00000004	 Word
+  wVirtualKeyCode  . . . . . . .	 00000006	 Word
+  wVirtualScanCode . . . . . . .	 00000008	 Word
+  uChar  . . . . . . . . . . . .	 0000000A	 Word
+  UnicodeChar  . . . . . . . . .	 00000000	 Word
+  AsciiChar  . . . . . . . . . .	 00000000	 Byte
+  dwControlKeyState  . . . . . .	 0000000C	 DWord
+  dwMousePosition  . . . . . . .	 00000000	 DWord
+  dwButtonState  . . . . . . . .	 00000004	 DWord
+  dwMouseControlKeyState . . . .	 00000008	 DWord
+  dwEventFlags . . . . . . . . .	 0000000C	 DWord
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCommandId  . . . . . . . . .	 00000000	 DWord
+  bSetFocus  . . . . . . . . . .	 00000000	 DWord
+KEY_EVENT_RECORD . . . . . . . .	 00000010
+  bKeyDown . . . . . . . . . . .	 00000000	 DWord
+  wRepeatCount . . . . . . . . .	 00000004	 Word
+  wVirtualKeyCode  . . . . . . .	 00000006	 Word
+  wVirtualScanCode . . . . . . .	 00000008	 Word
+  uChar  . . . . . . . . . . . .	 0000000A	 Word
+  UnicodeChar  . . . . . . . . .	 00000000	 Word
+  AsciiChar  . . . . . . . . . .	 00000000	 Byte
+  dwControlKeyState  . . . . . .	 0000000C	 DWord
+MENU_EVENT_RECORD  . . . . . . .	 00000004
+  dwCommandId  . . . . . . . . .	 00000000	 DWord
+MOUSE_EVENT_RECORD . . . . . . .	 00000010
+  dwMousePosition  . . . . . . .	 00000000	 DWord
+  dwButtonState  . . . . . . . .	 00000004	 DWord
+  dwMouseControlKeyState . . . .	 00000008	 DWord
+  dwEventFlags . . . . . . . . .	 0000000C	 DWord
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SYSTEMTIME . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+WINDOW_BUFFER_SIZE_RECORD  . . .	 00000004
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 000000AE DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000252 DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpRegs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FileTimeToDosDateTime  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FileTimeToSystemTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FormatMessageA . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandTail . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetFileTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLastError . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMaxXY . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMseconds  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetProcessHeap . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Gotoxy . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapAlloc  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+MsgBox . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OpenInputFile  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ParseDecimal32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ParseInteger32 . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadDec  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFile . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFloat  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFromFile . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadHex  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_compare  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteChar  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleA  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputAttribute  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputCharacterA . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteDec . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFloat . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHexB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHex . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStackFrameName  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+encode . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000252 Public STDCALL
+  L1 . . . . . . . . . . . . . .	L Near	 0000006F _TEXT	
+  ??0002 . . . . . . . . . . . .	L Near	 0000008C _TEXT	
+  ??0005 . . . . . . . . . . . .	L Near	 000000F9 _TEXT	
+  ??0004 . . . . . . . . . . . .	L Near	 00000172 _TEXT	
+  ??0003 . . . . . . . . . . . .	L Near	 000001D9 _TEXT	
+  base64Char_  . . . . . . . . .	L Near	 00000224 _TEXT	
+printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+??0000 . . . . . . . . . . . . .	Byte	 0000009B _DATA	
+??0001 . . . . . . . . . . . . .	Byte	 0000009E _DATA	
+??0006 . . . . . . . . . . . . .	Byte	 000000A1 _DATA	
+??0007 . . . . . . . . . . . . .	Byte	 000000A5 _DATA	
+??0008 . . . . . . . . . . . . .	Byte	 000000A7 _DATA	
+??0009 . . . . . . . . . . . . .	Byte	 000000AA _DATA	
+??000A . . . . . . . . . . . . .	Byte	 000000AC _DATA	
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+ALT_MASK . . . . . . . . . . . .	Number	 00000003h   
+CAPSLOCK_ON  . . . . . . . . . .	Number	 00000080h   
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+CTRL_MASK  . . . . . . . . . . .	Number	 0000000Ch   
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+DO_NOT_SHARE . . . . . . . . . .	Number	 00000000h   
+ENABLE_ECHO_INPUT  . . . . . . .	Number	 00000004h   
+ENABLE_LINE_INPUT  . . . . . . .	Number	 00000002h   
+ENABLE_MOUSE_INPUT . . . . . . .	Number	 00000010h   
+ENABLE_PROCESSED_INPUT . . . . .	Number	 00000001h   
+ENABLE_PROCESSED_OUTPUT  . . . .	Number	 00000001h   
+ENABLE_WINDOW_INPUT  . . . . . .	Number	 00000008h   
+ENABLE_WRAP_AT_EOL_OUTPUT  . . .	Number	 00000002h   
+ENHANCED_KEY . . . . . . . . . .	Number	 00000100h   
+FALSE  . . . . . . . . . . . . .	Number	 00000000h   
+FILE_APPEND_DATA . . . . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DEVICE  . . . . .	Number	 00000040h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_ENCRYPTED . . . .	Number	 00004000h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED .	Number	 00002000h   
+FILE_ATTRIBUTE_OFFLINE . . . . .	Number	 00001000h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_REPARSE_POINT . .	Number	 00000400h   
+FILE_ATTRIBUTE_SPARSE_FILE . . .	Number	 00000200h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FILE_BEGIN . . . . . . . . . . .	Number	 00000000h   
+FILE_CURRENT . . . . . . . . . .	Number	 00000001h   
+FILE_DELETE_CHILD  . . . . . . .	Number	 00000040h   
+FILE_END . . . . . . . . . . . .	Number	 00000002h   
+FILE_READ_DATA . . . . . . . . .	Number	 00000001h   
+FILE_SHARE_DELETE  . . . . . . .	Number	 00000004h   
+FILE_SHARE_READ  . . . . . . . .	Number	 00000001h   
+FILE_SHARE_WRITE . . . . . . . .	Number	 00000002h   
+FILE_WRITE_DATA  . . . . . . . .	Number	 00000002h   
+FOCUS_EVENT  . . . . . . . . . .	Number	 00000010h   
+FORMAT_MESSAGE_ALLOCATE_BUFFER .	Number	 00000100h   
+FORMAT_MESSAGE_FROM_SYSTEM . . .	Number	 00001000h   
+FormatMessage  . . . . . . . . .	Text   	 FormatMessageA
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+GetCommandLine . . . . . . . . .	Text   	 GetCommandLineA
+HANDLE . . . . . . . . . . . . .	Text   	 DWORD
+HEAP_GENERATE_EXCEPTIONS . . . .	Number	 00000004h   
+HEAP_GROWABLE  . . . . . . . . .	Number	 00000002h   
+HEAP_NO_SERIALIZE  . . . . . . .	Number	 00000001h   
+HEAP_REALLOC_IN_PLACE_ONLY . . .	Number	 00000010h   
+HEAP_ZERO_MEMORY . . . . . . . .	Number	 00000008h   
+IDABORT  . . . . . . . . . . . .	Number	 00000003h   
+IDCANCEL . . . . . . . . . . . .	Number	 00000002h   
+IDCLOSE  . . . . . . . . . . . .	Number	 00000008h   
+IDCONTINUE . . . . . . . . . . .	Number	 0000000Bh   
+IDHELP . . . . . . . . . . . . .	Number	 00000009h   
+IDIGNORE . . . . . . . . . . . .	Number	 00000005h   
+IDNO . . . . . . . . . . . . . .	Number	 00000007h   
+IDOK . . . . . . . . . . . . . .	Number	 00000001h   
+IDRETRY  . . . . . . . . . . . .	Number	 00000004h   
+IDTIMEOUT  . . . . . . . . . . .	Number	 00007D00h   
+IDTRYAGAIN . . . . . . . . . . .	Number	 0000000Ah   
+IDYES  . . . . . . . . . . . . .	Number	 00000006h   
+INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+KBDOWN_FLAG  . . . . . . . . . .	Number	 00000001h   
+KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
+KEY_MASKS  . . . . . . . . . . .	Number	 0000001Fh   
+LEFT_ALT_PRESSED . . . . . . . .	Number	 00000002h   
+LEFT_CTRL_PRESSED  . . . . . . .	Number	 00000008h   
+MB_ABORTRETRYIGNORE  . . . . . .	Number	 00000002h   
+MB_APPLMODAL . . . . . . . . . .	Number	 00000000h   
+MB_CANCELTRYCONTINUE . . . . . .	Number	 00000006h   
+MB_DEFBUTTON1  . . . . . . . . .	Number	 00000000h   
+MB_DEFBUTTON2  . . . . . . . . .	Number	 00000100h   
+MB_DEFBUTTON3  . . . . . . . . .	Number	 00000200h   
+MB_DEFBUTTON4  . . . . . . . . .	Number	 00000300h   
+MB_HELP  . . . . . . . . . . . .	Number	 00004000h   
+MB_ICONASTERISK  . . . . . . . .	Number	 00000040h   
+MB_ICONERROR . . . . . . . . . .	Number	 00000010h   
+MB_ICONEXCLAMATION . . . . . . .	Number	 00000030h   
+MB_ICONHAND  . . . . . . . . . .	Number	 00000010h   
+MB_ICONINFORMATION . . . . . . .	Number	 00000040h   
+MB_ICONQUESTION  . . . . . . . .	Number	 00000020h   
+MB_ICONSTOP  . . . . . . . . . .	Number	 00000010h   
+MB_ICONWARNING . . . . . . . . .	Number	 00000030h   
+MB_OKCANCEL  . . . . . . . . . .	Number	 00000001h   
+MB_OK  . . . . . . . . . . . . .	Number	 00000000h   
+MB_RETRYCANCEL . . . . . . . . .	Number	 00000005h   
+MB_SYSTEMMODAL . . . . . . . . .	Number	 00001000h   
+MB_TASKMODAL . . . . . . . . . .	Number	 00002000h   
+MB_USERICON  . . . . . . . . . .	Number	 00000080h   
+MB_YESNOCANCEL . . . . . . . . .	Number	 00000003h   
+MB_YESNO . . . . . . . . . . . .	Number	 00000004h   
+MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
+MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
+MessageBox . . . . . . . . . . .	Text   	 MessageBoxA
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+NUMLOCK_ON . . . . . . . . . . .	Number	 00000020h   
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
+RIGHT_ALT_PRESSED  . . . . . . .	Number	 00000001h   
+RIGHT_CTRL_PRESSED . . . . . . .	Number	 00000004h   
+ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
+ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
+SCROLLLOCK_ON  . . . . . . . . .	Number	 00000040h   
+SHIFT_MASK . . . . . . . . . . .	Number	 00000010h   
+SHIFT_PRESSED  . . . . . . . . .	Number	 00000010h   
+STD_ERROR_HANDLE . . . . . . . .	Number	 -0000000Ch   
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+TAB  . . . . . . . . . . . . . .	Number	 00000009h   
+TRUE . . . . . . . . . . . . . .	Number	 00000001h   
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+VK_11  . . . . . . . . . . . . .	Number	 000000BDh   
+VK_12  . . . . . . . . . . . . .	Number	 000000BBh   
+VK_ADD . . . . . . . . . . . . .	Number	 0000006Bh   
+VK_BACK  . . . . . . . . . . . .	Number	 00000008h   
+VK_CANCEL  . . . . . . . . . . .	Number	 00000003h   
+VK_CAPITAL . . . . . . . . . . .	Number	 00000014h   
+VK_CLEAR . . . . . . . . . . . .	Number	 0000000Ch   
+VK_CONTROL . . . . . . . . . . .	Number	 00000011h   
+VK_DECIMAL . . . . . . . . . . .	Number	 0000006Eh   
+VK_DELETE  . . . . . . . . . . .	Number	 0000002Eh   
+VK_DIVIDE  . . . . . . . . . . .	Number	 0000006Fh   
+VK_DOWN  . . . . . . . . . . . .	Number	 00000028h   
+VK_END . . . . . . . . . . . . .	Number	 00000023h   
+VK_ESCAPE  . . . . . . . . . . .	Number	 0000001Bh   
+VK_EXECUTE . . . . . . . . . . .	Number	 0000002Bh   
+VK_F10 . . . . . . . . . . . . .	Number	 00000079h   
+VK_F11 . . . . . . . . . . . . .	Number	 0000007Ah   
+VK_F12 . . . . . . . . . . . . .	Number	 0000007Bh   
+VK_F13 . . . . . . . . . . . . .	Number	 0000007Ch   
+VK_F14 . . . . . . . . . . . . .	Number	 0000007Dh   
+VK_F15 . . . . . . . . . . . . .	Number	 0000007Eh   
+VK_F16 . . . . . . . . . . . . .	Number	 0000007Fh   
+VK_F17 . . . . . . . . . . . . .	Number	 00000080h   
+VK_F18 . . . . . . . . . . . . .	Number	 00000081h   
+VK_F19 . . . . . . . . . . . . .	Number	 00000082h   
+VK_F1  . . . . . . . . . . . . .	Number	 00000070h   
+VK_F20 . . . . . . . . . . . . .	Number	 00000083h   
+VK_F21 . . . . . . . . . . . . .	Number	 00000084h   
+VK_F22 . . . . . . . . . . . . .	Number	 00000085h   
+VK_F23 . . . . . . . . . . . . .	Number	 00000086h   
+VK_F24 . . . . . . . . . . . . .	Number	 00000087h   
+VK_F2  . . . . . . . . . . . . .	Number	 00000071h   
+VK_F3  . . . . . . . . . . . . .	Number	 00000072h   
+VK_F4  . . . . . . . . . . . . .	Number	 00000073h   
+VK_F5  . . . . . . . . . . . . .	Number	 00000074h   
+VK_F6  . . . . . . . . . . . . .	Number	 00000075h   
+VK_F7  . . . . . . . . . . . . .	Number	 00000076h   
+VK_F8  . . . . . . . . . . . . .	Number	 00000077h   
+VK_F9  . . . . . . . . . . . . .	Number	 00000078h   
+VK_HELP  . . . . . . . . . . . .	Number	 0000002Fh   
+VK_HOME  . . . . . . . . . . . .	Number	 00000024h   
+VK_INSERT  . . . . . . . . . . .	Number	 0000002Dh   
+VK_LBUTTON . . . . . . . . . . .	Number	 00000001h   
+VK_LCONTROL  . . . . . . . . . .	Number	 000000A2h   
+VK_LEFT  . . . . . . . . . . . .	Number	 00000025h   
+VK_LMENU . . . . . . . . . . . .	Number	 000000A4h   
+VK_LSHIFT  . . . . . . . . . . .	Number	 000000A0h   
+VK_MENU  . . . . . . . . . . . .	Number	 00000012h   
+VK_MULTIPLY  . . . . . . . . . .	Number	 0000006Ah   
+VK_NEXT  . . . . . . . . . . . .	Number	 00000022h   
+VK_NUMLOCK . . . . . . . . . . .	Number	 00000090h   
+VK_NUMPAD0 . . . . . . . . . . .	Number	 00000060h   
+VK_NUMPAD1 . . . . . . . . . . .	Number	 00000061h   
+VK_NUMPAD2 . . . . . . . . . . .	Number	 00000062h   
+VK_NUMPAD3 . . . . . . . . . . .	Number	 00000063h   
+VK_NUMPAD4 . . . . . . . . . . .	Number	 00000064h   
+VK_NUMPAD5 . . . . . . . . . . .	Number	 00000065h   
+VK_NUMPAD6 . . . . . . . . . . .	Number	 00000066h   
+VK_NUMPAD7 . . . . . . . . . . .	Number	 00000067h   
+VK_NUMPAD8 . . . . . . . . . . .	Number	 00000068h   
+VK_NUMPAD9 . . . . . . . . . . .	Number	 00000069h   
+VK_PAUSE . . . . . . . . . . . .	Number	 00000013h   
+VK_PRINT . . . . . . . . . . . .	Number	 0000002Ah   
+VK_PRIOR . . . . . . . . . . . .	Number	 00000021h   
+VK_RBUTTON . . . . . . . . . . .	Number	 00000002h   
+VK_RCONTROL  . . . . . . . . . .	Number	 000000A3h   
+VK_RETURN  . . . . . . . . . . .	Number	 0000000Dh   
+VK_RIGHT . . . . . . . . . . . .	Number	 00000027h   
+VK_RMENU . . . . . . . . . . . .	Number	 000000A5h   
+VK_RSHIFT  . . . . . . . . . . .	Number	 000000A1h   
+VK_SCROLL  . . . . . . . . . . .	Number	 00000091h   
+VK_SEPARATER . . . . . . . . . .	Number	 0000006Ch   
+VK_SHIFT . . . . . . . . . . . .	Number	 00000010h   
+VK_SNAPSHOT  . . . . . . . . . .	Number	 0000002Ch   
+VK_SPACE . . . . . . . . . . . .	Number	 00000020h   
+VK_SUBTRACT  . . . . . . . . . .	Number	 0000006Dh   
+VK_TAB . . . . . . . . . . . . .	Number	 00000009h   
+VK_UP  . . . . . . . . . . . . .	Number	 00000026h   
+WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
+WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
+WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+base64Dict . . . . . . . . . . .	Byte	 00000000 _DATA	
+black  . . . . . . . . . . . . .	Number	 00000000h   
+blue . . . . . . . . . . . . . .	Number	 00000001h   
+brown  . . . . . . . . . . . . .	Number	 00000006h   
+buffer . . . . . . . . . . . . .	Byte	 00000041 _DATA	
+byteCount  . . . . . . . . . . .	Byte	 00000091 _DATA	
+count  . . . . . . . . . . . . .	Byte	 00000092 _DATA	
+cyan . . . . . . . . . . . . . .	Number	 00000003h   
+exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+gray . . . . . . . . . . . . . .	Number	 00000008h   
+green  . . . . . . . . . . . . .	Number	 00000002h   
+groupNumber  . . . . . . . . . .	Word	 00000095 _DATA	
+groupSize  . . . . . . . . . . .	Word	 00000093 _DATA	
+lightBlue  . . . . . . . . . . .	Number	 00000009h   
+lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
+lightGray  . . . . . . . . . . .	Number	 00000007h   
+lightGreen . . . . . . . . . . .	Number	 0000000Ah   
+lightMagenta . . . . . . . . . .	Number	 0000000Dh   
+lightRed . . . . . . . . . . . .	Number	 0000000Ch   
+magenta  . . . . . . . . . . . .	Number	 00000005h   
+precision  . . . . . . . . . . .	Word	 00000099 _DATA	
+red  . . . . . . . . . . . . . .	Number	 00000004h   
+stringLength . . . . . . . . . .	Word	 00000097 _DATA	
+white  . . . . . . . . . . . . .	Number	 0000000Fh   
+wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
+yellow . . . . . . . . . . . . .	Number	 0000000Eh   
+
+	   1 Warnings
+	   0 Errors
