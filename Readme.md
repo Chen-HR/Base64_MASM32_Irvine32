@@ -11,7 +11,7 @@ Final Project for "NUU 110-2 102IEA0011 AssemblyLanguang"
 
 ## Information
 
-- Project Name: Base64-MASM32
+- Project Name: Base64_MASM32_Irvine32
 - Author: Chen-HR(U0924043)(NUU/EECS/CSIE/109/043), FSF(U0924028)(NUU/EECS/CSIE/109/028), WXT(U0924051)(NUU/EECS/CSIE/109/051)
 - Email: tn918419@gmail.com, u0924043@o365.nuu.edu.tw
 - Copyright:
